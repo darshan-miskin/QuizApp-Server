@@ -29,7 +29,7 @@
             android:name=".data.QuizBindService"
             android:enabled="true"
             android:exported="true"
-            android:description="This service is responsible for running the quiz. If stopped, the quiz app won't work."
+            android:description="@string/service_description"
             android:permission="QUIZ_SERVER_PERMISSION"
             android:process="quiz_process"/>
     </application>

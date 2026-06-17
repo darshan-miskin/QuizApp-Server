@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">QuizApp_Server</string>
+    <string name="service_description">This service is responsible for running the quiz. If stopped, the quiz app won\'t work.</string>
 </resources>
