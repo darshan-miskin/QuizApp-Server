@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <permission android:name="com.darshan.miskin.QUIZ_SERVER_PERMISSION" />
 
     <application
         android:allowBackup="true"
@@ -29,6 +30,7 @@
             android:enabled="true"
             android:exported="true"
             android:description="This service is responsible for running the quiz. If stopped, the quiz app won't work."
+            android:permission="QUIZ_SERVER_PERMISSION"
             android:process="quiz_process"/>
     </application>
 
