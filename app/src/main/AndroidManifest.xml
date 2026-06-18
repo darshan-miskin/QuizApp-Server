@@ -30,7 +30,7 @@
             android:enabled="true"
             android:exported="true"
             android:description="@string/service_description"
-            android:permission="QUIZ_SERVER_PERMISSION"
+            android:permission="com.darshan.miskin.QUIZ_SERVER_PERMISSION"
             android:process="quiz_process"/>
     </application>
 
