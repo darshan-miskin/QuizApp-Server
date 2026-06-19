@@ -26,11 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    @Inject lateinit var quizRepository: QuizRepository
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -43,23 +39,6 @@ class MainActivity : ComponentActivity() {
                     Greeting(
                         modifier = Modifier.padding(innerPadding)
                     )
-                }
-            }
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            quizRepository.getQuizData().collect {
-                Log.d("asdf", it.toString())
-                when(it){
-                    is ResponseState.Error -> {}
-                    ResponseState.Loading -> {}
-                    is ResponseState.Success<List<QuizData>> -> {
-
-                    }
                 }
             }
         }
