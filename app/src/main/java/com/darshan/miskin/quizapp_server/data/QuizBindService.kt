@@ -4,7 +4,7 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import com.darshan.miskin.quizapp_server.IQuizCompleteInterface
+import com.darshan.miskin.quizapp_server.IQuizCallBackInterface
 import com.darshan.miskin.quizapp_server.IQuizDataInterface
 import com.darshan.miskin.quizapp_server.QuizData
 import com.darshan.miskin.quizapp_server.data.state.ResponseState
@@ -19,7 +19,7 @@ class QuizBindService : LifecycleService() {
     lateinit var quizRepository: QuizRepository
     lateinit var list: List<QuizData>
     var questionCounter = 0
-    var iQuizCompleteInterface: IQuizCompleteInterface? = null
+    var iQuizCallBackInterface: IQuizCallBackInterface? = null
 
     override fun onBind(intent: Intent): IBinder {
         super.onBind(intent)
@@ -44,12 +44,12 @@ class QuizBindService : LifecycleService() {
             return list[questionCounter++]
         }
 
-        override fun registerQuizCallback(iQuizCompleteInterface: IQuizCompleteInterface?) {
-            this@QuizBindService.iQuizCompleteInterface = iQuizCompleteInterface
+        override fun registerQuizCallback(iQuizCompleteInterface: IQuizCallBackInterface?) {
+            this@QuizBindService.iQuizCallBackInterface = iQuizCompleteInterface
         }
 
-        override fun unregisterQuizCallback(iQuizCompleteInterface: IQuizCompleteInterface?) {
-            this@QuizBindService.iQuizCompleteInterface = null
+        override fun unregisterQuizCallback(iQuizCompleteInterface: IQuizCallBackInterface?) {
+            this@QuizBindService.iQuizCallBackInterface = null
         }
     }
 
