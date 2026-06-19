@@ -31,7 +31,11 @@
             android:exported="true"
             android:description="@string/service_description"
             android:permission="com.darshan.miskin.QUIZ_SERVER_PERMISSION"
-            android:process="quiz_process"/>
+            android:process="quiz_process">
+            <intent-filter>
+                <action android:name="com.darshan.miskin.ACTION_START_QUIZ" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

@@ -2,10 +2,10 @@
 package com.darshan.miskin.quizapp_server;
 
 parcelable QuizData{
-    String category;
-    String correct_answer;
-    String difficulty;
-    List<String> incorrect_answers;
-    String question;
-    String type;
+    @JavaPassthrough(annotation="@androidx.annotation.NonNull") String category;
+    @JavaPassthrough(annotation="@androidx.annotation.NonNull") String correct_answer;
+    @JavaPassthrough(annotation="@androidx.annotation.NonNull") String difficulty;
+    @JavaPassthrough(annotation="@androidx.annotation.NonNull") List<String> incorrect_answers;
+    @JavaPassthrough(annotation="@androidx.annotation.NonNull") String question;
+    @JavaPassthrough(annotation="@androidx.annotation.NonNull") String type;
 }
