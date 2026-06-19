@@ -51,7 +51,6 @@ fun Greeting(modifier: Modifier = Modifier) {
         Column(
             modifier = modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-//        verticalArrangement = Arrangement.Center
         ) {
             Text(
                 modifier = modifier.weight(1f),

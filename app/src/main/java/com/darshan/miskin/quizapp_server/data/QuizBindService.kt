@@ -2,6 +2,7 @@ package com.darshan.miskin.quizapp_server.data
 
 import android.content.Intent
 import android.os.IBinder
+import android.util.Log
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.darshan.miskin.quizapp_server.IQuizCallBackInterface
@@ -11,6 +12,7 @@ import com.darshan.miskin.quizapp_server.data.state.ResponseState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -30,7 +32,11 @@ class QuizBindService : LifecycleService() {
                         is ResponseState.Error -> {}
                         ResponseState.Loading -> {}
                         is ResponseState.Success<List<QuizData>> -> {
-                            list = it.data
+                            withContext(Dispatchers.Main){
+                                Log.d("asdf", "Api Success!!")
+                                list = it.data
+                                iQuizCallBackInterface?.onQuizLoaded()
+                            }
                         }
                     }
                 }
@@ -40,7 +46,11 @@ class QuizBindService : LifecycleService() {
     }
 
     val iQuizDataInterface = object : IQuizDataInterface.Stub() {
-        override fun getNextQuestion(): QuizData {
+        override fun getNextQuestion(): QuizData? {
+            if (questionCounter==10) {
+                iQuizCallBackInterface?.onQuizComplete(true)
+                return null
+            }
             return list[questionCounter++]
         }
 
