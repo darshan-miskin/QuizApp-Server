@@ -2,6 +2,7 @@ package com.darshan.miskin.quizapp_server.data
 
 import android.content.Intent
 import android.os.IBinder
+import android.os.RemoteCallbackList
 import android.util.Log
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
@@ -21,7 +22,7 @@ class QuizBindService : LifecycleService() {
     lateinit var quizRepository: QuizRepository
     lateinit var list: List<QuizData>
     var questionCounter = 0
-    var iQuizCallBackInterface: IQuizCallBackInterface? = null
+    private val callbackList = RemoteCallbackList<IQuizCallBackInterface>()
 
     override fun onBind(intent: Intent): IBinder {
         super.onBind(intent)
@@ -35,7 +36,11 @@ class QuizBindService : LifecycleService() {
                             withContext(Dispatchers.Main){
                                 Log.d("asdf", "Api Success!!")
                                 list = it.data
-                                iQuizCallBackInterface?.onQuizLoaded()
+                                val count = callbackList.beginBroadcast()
+                                for (i in 0 until count){
+                                    callbackList.getBroadcastItem(i).onQuizLoaded()
+                                }
+                                callbackList.finishBroadcast()
                             }
                         }
                     }
@@ -48,18 +53,22 @@ class QuizBindService : LifecycleService() {
     val iQuizDataInterface = object : IQuizDataInterface.Stub() {
         override fun getNextQuestion(): QuizData? {
             if (questionCounter==10) {
-                iQuizCallBackInterface?.onQuizComplete(true)
+                val count = callbackList.beginBroadcast()
+                for (i in 0 until count){
+                    callbackList.getBroadcastItem(i).onQuizComplete(true)
+                }
+                callbackList.finishBroadcast()
                 return null
             }
             return list[questionCounter++]
         }
 
         override fun registerQuizCallback(iQuizCompleteInterface: IQuizCallBackInterface?) {
-            this@QuizBindService.iQuizCallBackInterface = iQuizCompleteInterface
+            callbackList.register(iQuizCompleteInterface)
         }
 
         override fun unregisterQuizCallback(iQuizCompleteInterface: IQuizCallBackInterface?) {
-            this@QuizBindService.iQuizCallBackInterface = null
+            callbackList.unregister(iQuizCompleteInterface)
         }
     }
 
