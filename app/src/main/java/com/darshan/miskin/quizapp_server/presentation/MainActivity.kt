@@ -1,35 +1,65 @@
 package com.darshan.miskin.quizapp_server.presentation
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
+import com.darshan.miskin.quizapp_server.QuizData
+import com.darshan.miskin.quizapp_server.data.QuizRepository
+import com.darshan.miskin.quizapp_server.data.state.ResponseState
 import com.darshan.miskin.quizapp_server.presentation.ui.theme.QuizApp_ServerTheme
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject lateinit var quizRepository: QuizRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             QuizApp_ServerTheme {
-                Scaffold(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)) { innerPadding ->
+                Scaffold(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) { innerPadding ->
                     Greeting(
                         modifier = Modifier.padding(innerPadding)
                     )
+                }
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            quizRepository.getQuizData().collect {
+                Log.d("asdf", it.toString())
+                when(it){
+                    is ResponseState.Error -> {}
+                    ResponseState.Loading -> {}
+                    is ResponseState.Success<List<QuizData>> -> {
+
+                    }
                 }
             }
         }
@@ -38,21 +68,20 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Greeting(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Surface(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
 //        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            modifier = modifier.weight(1f),
-            text = "This is a Server app, for the Quiz Client App!"
-        )
-        Button(
-            modifier = modifier.wrapContentHeight().weight(6f),
-            onClick = {
-
-            }) {
-            Text("Start Quiz")
+        ) {
+            Text(
+                modifier = modifier.weight(1f),
+                text = "This is a Server app, for the Quiz Client App!"
+            )
+            Text(
+                "Server is Ready! Open client app and click Start Quiz",
+                style = MaterialTheme.typography.titleMedium
+            )
         }
     }
 }

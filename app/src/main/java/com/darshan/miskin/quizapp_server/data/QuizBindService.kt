@@ -1,19 +1,56 @@
 package com.darshan.miskin.quizapp_server.data
 
-import android.app.Service
 import android.content.Intent
 import android.os.IBinder
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
+import com.darshan.miskin.quizapp_server.IQuizCompleteInterface
+import com.darshan.miskin.quizapp_server.IQuizDataInterface
+import com.darshan.miskin.quizapp_server.QuizData
+import com.darshan.miskin.quizapp_server.data.state.ResponseState
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class QuizBindService : Service() {
-
+class QuizBindService : LifecycleService() {
     @Inject
     lateinit var quizRepository: QuizRepository
+    lateinit var list: List<QuizData>
+    var questionCounter = 0
+    var iQuizCompleteInterface: IQuizCompleteInterface? = null
 
-    override fun onBind(intent: Intent): IBinder? {
-        return null
+    override fun onBind(intent: Intent): IBinder {
+        super.onBind(intent)
+        if (intent.action == "com.darshan.miskin.ACTION_START_QUIZ") {
+            lifecycleScope.launch(Dispatchers.IO) {
+                quizRepository.getQuizData().collect {
+                    when(it){
+                        is ResponseState.Error -> {}
+                        ResponseState.Loading -> {}
+                        is ResponseState.Success<List<QuizData>> -> {
+                            list = it.data
+                        }
+                    }
+                }
+            }
+        }
+        return iQuizDataInterface
+    }
+
+    val iQuizDataInterface = object : IQuizDataInterface.Stub() {
+        override fun getNextQuestion(): QuizData {
+            return list[questionCounter++]
+        }
+
+        override fun registerQuizCallback(iQuizCompleteInterface: IQuizCompleteInterface?) {
+            this@QuizBindService.iQuizCompleteInterface = iQuizCompleteInterface
+        }
+
+        override fun unregisterQuizCallback(iQuizCompleteInterface: IQuizCompleteInterface?) {
+            this@QuizBindService.iQuizCompleteInterface = null
+        }
     }
 
     override fun onDestroy() {

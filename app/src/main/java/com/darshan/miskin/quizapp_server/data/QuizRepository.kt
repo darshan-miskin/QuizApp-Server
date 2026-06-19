@@ -11,7 +11,7 @@ class QuizRepository @Inject constructor(val quizApiService: QuizApiService) {
         try {
             val response = quizApiService.getQuizData()
             if(response.response_code == 0){
-                emit(ResponseState.Success(response.quizDataList))
+                emit(ResponseState.Success(response.results))
             }
             else {
                 emit(ResponseState.Error("(Error) API Response Code: ${response.response_code}"))

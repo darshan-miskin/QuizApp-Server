@@ -59,4 +59,6 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    ksp("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
+    implementation(libs.androidx.lifecycle.service)
 }
