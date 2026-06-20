@@ -9,36 +9,69 @@ import androidx.lifecycle.lifecycleScope
 import com.darshan.miskin.quizapp_server.IQuizCallBackInterface
 import com.darshan.miskin.quizapp_server.IQuizDataInterface
 import com.darshan.miskin.quizapp_server.QuizData
+import com.darshan.miskin.quizapp_server.data.model.SessionData
 import com.darshan.miskin.quizapp_server.data.state.ResponseState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class QuizBindService : LifecycleService() {
     @Inject
     lateinit var quizRepository: QuizRepository
-    lateinit var list: List<QuizData>
-    var questionCounter = 0
+    private val sessionMap = ConcurrentHashMap<Int, SessionData>()
     private val callbackList = RemoteCallbackList<IQuizCallBackInterface>()
 
-    override fun onBind(intent: Intent): IBinder {
+    override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
-        if (intent.action == "com.darshan.miskin.ACTION_START_QUIZ") {
+        if (intent.action != "com.darshan.miskin.ACTION_START_QUIZ")
+            return null
+        return iQuizDataInterface
+    }
+
+    val iQuizDataInterface = object : IQuizDataInterface.Stub() {
+        override fun getNextQuestion(): QuizData? {
+            val clientData = sessionMap.getValue(getCallingUid())
+            if (clientData.questionCounter==10) {
+                val count = callbackList.beginBroadcast()
+                for (i in 0 until count){
+                    callbackList.getBroadcastItem(i).onQuizComplete()
+                }
+                callbackList.finishBroadcast()
+                return null
+            }
+            return clientData.list[clientData.questionCounter++]
+        }
+
+        override fun refresh() {
+            val uid = getCallingUid()
+            sessionMap[uid] = SessionData().apply {
+                questionCounter = 0
+                list = emptyList()
+            }
             lifecycleScope.launch(Dispatchers.IO) {
                 quizRepository.getQuizData().collect {
                     when(it){
-                        is ResponseState.Error -> {}
-                        ResponseState.Loading -> {}
+                        is ResponseState.Error -> {
+                            withContext(Dispatchers.Main){
+                                val count = callbackList.beginBroadcast()
+                                for (i in 0 until count) {
+                                    if (uid == callbackList.getBroadcastCookie(i))
+                                        callbackList.getBroadcastItem(i).onError(it.errorMessage)
+                                }
+                                callbackList.finishBroadcast()
+                            }
+                        }
                         is ResponseState.Success<List<QuizData>> -> {
                             withContext(Dispatchers.Main){
-                                Log.d("asdf", "Api Success!!")
-                                list = it.data
+                                sessionMap.getValue(uid).list = it.data
                                 val count = callbackList.beginBroadcast()
-                                for (i in 0 until count){
-                                    callbackList.getBroadcastItem(i).onQuizLoaded()
+                                for (i in 0 until count) {
+                                    if (uid == callbackList.getBroadcastCookie(i))
+                                        callbackList.getBroadcastItem(i).onQuizLoaded()
                                 }
                                 callbackList.finishBroadcast()
                             }
@@ -47,24 +80,10 @@ class QuizBindService : LifecycleService() {
                 }
             }
         }
-        return iQuizDataInterface
-    }
-
-    val iQuizDataInterface = object : IQuizDataInterface.Stub() {
-        override fun getNextQuestion(): QuizData? {
-            if (questionCounter==10) {
-                val count = callbackList.beginBroadcast()
-                for (i in 0 until count){
-                    callbackList.getBroadcastItem(i).onQuizComplete(true)
-                }
-                callbackList.finishBroadcast()
-                return null
-            }
-            return list[questionCounter++]
-        }
 
         override fun registerQuizCallback(iQuizCompleteInterface: IQuizCallBackInterface?) {
-            callbackList.register(iQuizCompleteInterface)
+            callbackList.register(iQuizCompleteInterface, getCallingUid())
+            sessionMap[getCallingUid()] = SessionData()
         }
 
         override fun unregisterQuizCallback(iQuizCompleteInterface: IQuizCallBackInterface?) {

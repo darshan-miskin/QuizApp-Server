@@ -1,13 +1,14 @@
 package com.darshan.miskin.quizapp_server.data
 
 import com.darshan.miskin.quizapp_server.data.state.ResponseState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class QuizRepository @Inject constructor(val quizApiService: QuizApiService) {
 
     fun getQuizData() = flow {
-        emit(ResponseState.Loading)
         try {
             val response = quizApiService.getQuizData()
             if(response.response_code == 0){
@@ -20,5 +21,5 @@ class QuizRepository @Inject constructor(val quizApiService: QuizApiService) {
         catch (e: Exception){
             emit(ResponseState.Error(e.message))
         }
-    }
+    }.flowOn(Dispatchers.IO)
 }
