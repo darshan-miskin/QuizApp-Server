@@ -3,12 +3,12 @@ package com.darshan.miskin.quizapp_server.data
 import android.content.Intent
 import android.os.IBinder
 import android.os.RemoteCallbackList
-import android.util.Log
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.darshan.miskin.quizapp_server.IQuizCallBackInterface
 import com.darshan.miskin.quizapp_server.IQuizDataInterface
 import com.darshan.miskin.quizapp_server.QuizData
+import com.darshan.miskin.quizapp_server.contract.QuizContract
 import com.darshan.miskin.quizapp_server.data.model.SessionData
 import com.darshan.miskin.quizapp_server.data.state.ResponseState
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,7 +27,7 @@ class QuizBindService : LifecycleService() {
 
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
-        if (intent.action != "com.darshan.miskin.ACTION_START_QUIZ")
+        if (intent.action != QuizContract.ACTION_START_QUIZ)
             return null
         return iQuizDataInterface
     }
