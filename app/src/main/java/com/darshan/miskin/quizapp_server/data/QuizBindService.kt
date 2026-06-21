@@ -46,7 +46,7 @@ class QuizBindService : LifecycleService() {
             return clientData.list[clientData.questionCounter++]
         }
 
-        override fun refresh() {
+        override fun startQuiz() {
             val uid = getCallingUid()
             sessionMap[uid] = SessionData().apply {
                 questionCounter = 0
