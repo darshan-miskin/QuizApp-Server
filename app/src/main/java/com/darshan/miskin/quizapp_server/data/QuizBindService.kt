@@ -20,10 +20,23 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class QuizBindService : LifecycleService() {
-    @Inject
-    lateinit var quizRepository: QuizRepository
+    var quizRepository: QuizRepository? = null
     private val sessionMap = ConcurrentHashMap<Int, SessionData>()
-    private val callbackList = RemoteCallbackList<IQuizCallBackInterface>()
+    private val callbackList = object : RemoteCallbackList<IQuizCallBackInterface>(){
+        override fun onCallbackDied(
+            callbackInterface: IQuizCallBackInterface?,
+            cookie: Any?
+        ) {
+            super.onCallbackDied(callbackInterface, cookie)
+            if (cookie is Int)
+                sessionMap.remove(cookie)
+        }
+    }
+
+    @Inject
+    fun initQuizRepository(quizRepository: QuizRepository) {
+        this.quizRepository = quizRepository
+    }
 
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
@@ -35,9 +48,9 @@ class QuizBindService : LifecycleService() {
     val iQuizDataInterface = object : IQuizDataInterface.Stub() {
         override fun getNextQuestion(): QuizData? {
             val clientData = sessionMap.getValue(getCallingUid())
-            if (clientData.questionCounter==10) {
+            if (clientData.questionCounter == 10) {
                 val count = callbackList.beginBroadcast()
-                for (i in 0 until count){
+                for (i in 0 until count) {
                     callbackList.getBroadcastItem(i).onQuizComplete()
                 }
                 callbackList.finishBroadcast()
@@ -53,26 +66,27 @@ class QuizBindService : LifecycleService() {
                 list = emptyList()
             }
             lifecycleScope.launch(Dispatchers.IO) {
-                quizRepository.getQuizData().collect {
-                    when(it){
+                quizRepository?.getQuizData()?.collect {
+                    when (it) {
                         is ResponseState.Error -> {
-                            withContext(Dispatchers.Main){
-                                val count = callbackList.beginBroadcast()
-                                for (i in 0 until count) {
-                                    if (uid == callbackList.getBroadcastCookie(i))
+                            val count = callbackList.beginBroadcast()
+                            for (i in 0 until count) {
+                                if (uid == callbackList.getBroadcastCookie(i))
+                                    withContext(Dispatchers.Main) {
                                         callbackList.getBroadcastItem(i).onError(it.errorMessage)
-                                }
+                                    }
                                 callbackList.finishBroadcast()
                             }
                         }
+
                         is ResponseState.Success<List<QuizData>> -> {
-                            withContext(Dispatchers.Main){
-                                sessionMap.getValue(uid).list = it.data
-                                val count = callbackList.beginBroadcast()
-                                for (i in 0 until count) {
-                                    if (uid == callbackList.getBroadcastCookie(i))
+                            sessionMap.getValue(uid).list = it.data
+                            val count = callbackList.beginBroadcast()
+                            for (i in 0 until count) {
+                                if (uid == callbackList.getBroadcastCookie(i))
+                                    withContext(Dispatchers.Main) {
                                         callbackList.getBroadcastItem(i).onQuizLoaded()
-                                }
+                                    }
                                 callbackList.finishBroadcast()
                             }
                         }
@@ -92,6 +106,9 @@ class QuizBindService : LifecycleService() {
     }
 
     override fun onDestroy() {
+        sessionMap.clear()
+        callbackList.kill()
+        quizRepository = null
         super.onDestroy()
     }
 }
