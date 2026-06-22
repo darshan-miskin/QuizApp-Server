@@ -1,5 +1,6 @@
 package com.darshan.miskin.quizapp_server.di
 
+import com.darshan.miskin.quizapp_server.BuildConfig
 import com.darshan.miskin.quizapp_server.data.QuizApiService
 import dagger.Module
 import dagger.Provides
@@ -14,7 +15,7 @@ class AppModule {
     @Provides
     fun provideRetrofit(): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://opentdb.com/")
+            .baseUrl(BuildConfig.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }

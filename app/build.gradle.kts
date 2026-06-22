@@ -27,6 +27,9 @@ android {
                 enable = false
             }
         }
+        defaultConfig {
+            buildConfigField(type = "String", name = "BASE_URL", value = "\"https://opentdb.com/\"")
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -35,6 +38,7 @@ android {
     buildFeatures {
         compose = true
         aidl = true
+        buildConfig = true
     }
 }
 
