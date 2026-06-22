@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">QuizApp_Server</string>
     <string name="service_description">This service is responsible for running the quiz. If stopped, the quiz app won\'t work.</string>
+    <string name="this_is_the_server_app">This is the Server App, for the Quiz Client App!</string>
+    <string name="server_is_ready">Server is Ready!\nOpen client app and click Start Quiz</string>
+    <string name="you_can_close_this_app">You don\'t need to open this app every time to use the Quiz App</string>
 </resources>
