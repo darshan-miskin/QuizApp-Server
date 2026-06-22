@@ -1,6 +1,6 @@
-# QuizApp Server
-
 ![Architecture Diagram](https://raw.githubusercontent.com/darshan-miskin/storage/refs/heads/master/Quiz%20App%20Architecture.png)
+
+# QuizApp Server
 
 QuizApp Server is an Android backend service designed to provide quiz data to multiple client applications using **AIDL (Android Interface Definition Language)**. It acts as a centralized "Server" app that fetches quiz content from a remote API and manages client sessions and progress.
 
