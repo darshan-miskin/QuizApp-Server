@@ -2,7 +2,7 @@
 
 # QuizApp Server
 
-QuizApp Server is an Android backend service designed to provide quiz data to multiple client applications using **AIDL (Android Interface Definition Language)**. It acts as a centralized "Server" app that fetches quiz content from a remote API and manages client sessions and progress.
+QuizApp Server is an Android backend service designed to provide quiz data to multiple client applications using **AIDL (Android Interface Definition Language)**. It acts as a centralized "Server" app to the [**QuizApp Client app,**](https://github.com/darshan-miskin/QuizApp-Client) that fetches quiz content from a remote API and manages client sessions and progress.
 
 ## 🚀 Key Features
 
